@@ -1,8 +1,8 @@
-ARG VERSION=latest
-FROM python:${VERSION}
+FROM debian:jessie-slim
 
-RUN echo "Installing unzip and qpdf"
-RUN apt update;apt -y install unzip qpdf
+RUN echo "Installing python, wget, unzip and qpdf"
+RUN apt update;apt -y install python wget unzip qpdf
+RUN rm -rf /var/lib/apt/lists/*
 RUN mkdir /opt/pdftools/
 WORKDIR /opt/pdftools/
 RUN echo "Installing pdf-parser & pdfid"

@@ -7,7 +7,7 @@ declare -a DEF_PASS=("1234","12345","123456","password","Password1","password123
 
 if [ -z $FILE ]
 then
-    echo "ERROR - No file found!"
+    echo "ERROR - No file argument found!"
     exit
 fi
 
@@ -16,8 +16,12 @@ then
     echo "No password found, if encrypted cant proceed!"
 fi
 
-is_encrypted=$(python ./pdfid.py ${FILE} |grep Encrypt|awk '{print $2}')
+if [ ! -f $FILE ]; then
+    echo "File not found!"
+    exit
+fi
 
+is_encrypted=$(python ./pdfid.py ${FILE} |grep Encrypt|awk '{print $2}')
 
 function extract_urls {
     echo "extracting URIs:"
@@ -25,8 +29,12 @@ function extract_urls {
     then
         python ./pdf-parser.py -s /URI ${FILE} |grep http|awk '{print $2}'|grep -v Didier|tr -d "("|tr -d ")"    
     else
-        python ./pdf-parser.py -s /URI ${FILE}_2|grep http|awk '{print $2}' |grep -v Didier|tr -d "("|tr -d ")"
-
+        if [ ! -f ${FILE}_2 ]
+        then
+            echo "something went wrong decrypted file not found!"
+        else
+            python ./pdf-parser.py -s /URI ${FILE}_2|grep http|awk '{print $2}' |grep -v Didier|tr -d "("|tr -d ")"
+        fi
     fi
 }
 
@@ -39,20 +47,17 @@ then
         echo "Trying default passwords"
         for i in "${DEF_PASS[@]}"
         do
-            password_correct=$(qpdf --decrypt --password=$i ${FILE} ${FILE}_2)
-            if [[ "$password_correct" != "invalid password" ]]
-            then
-                PASSWD=$i
-            fi
+            qpdf --decrypt --password=$i ${FILE} ${FILE}_2
         done
+    else
+        qpdf --decrypt --password=$PASSWD ${FILE} ${FILE}_2
     fi
-    password_correct=$(qpdf --decrypt --password=${PASSWD} ${FILE} ${FILE}_2)
-    if [[ "$password_correct" != "invalid password" ]]
+    if [ -z ${FILE}_2 ]
     then
+        echo "something went wrong, cant find decrypted file"
+    else
         echo "Valid Password, continuing..."
         extract_urls
-            else
-        echo "password incorrect, ending!"
     fi
 else
     echo "PDF not encrypted, continuing analysis..."

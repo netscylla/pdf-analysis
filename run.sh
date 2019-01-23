@@ -28,12 +28,16 @@ function extract_urls {
     if [ -z $PASSWD ]
     then
         python ./pdf-parser.py -s /URI ${FILE} |grep http|awk '{print $2}'|grep -v Didier|tr -d "("|tr -d ")"    
+        qpdf --qdf --object-streams=disable ${FILE} ${FILE}_3
+        python ./pdf-parser.py -s /URI ${FILE}_3|grep http|awk '{print $2}' |grep -v Didier|tr -d "("|tr -d ")"
     else
         if [ ! -f ${FILE}_2 ]
         then
             echo "something went wrong decrypted file not found!"
         else
             python ./pdf-parser.py -s /URI ${FILE}_2|grep http|awk '{print $2}' |grep -v Didier|tr -d "("|tr -d ")"
+            qpdf --qdf --object-streams=disable ${FILE}_2 ${FILE}_3
+            python ./pdf-parser.py -s /URI ${FILE}_3|grep http|awk '{print $2}' |grep -v Didier|tr -d "("|tr -d ")"
         fi
     fi
 }

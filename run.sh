@@ -3,7 +3,7 @@
 FILE=$1
 PASSWD=$2
 
-declare -a DEF_PASS=("1234","12345","123456","password","Password1","password123")
+declare -a DEF_PASS=("VelvetSweatshop","1234","12345","123456","password","Password1","password123")
 
 if [ -z $FILE ]
 then
